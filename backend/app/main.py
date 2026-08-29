@@ -14,11 +14,13 @@ from app.api import knowledge as knowledge_api
 from app.api import sources as sources_api
 from app.config import get_settings
 from app.schemas.common import ConfigResponse, HealthResponse
-from app.services.embedding_service import get_embedding_service
 from app.services.llm_service import get_llm_service
-from app.services.retrieval_service import get_retrieval_service
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+)
+
 logger = logging.getLogger("ip_sakti.main")
 
 settings = get_settings()
@@ -48,35 +50,56 @@ app.include_router(escalation_api.router)
 
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> HealthResponse:
-    """Cheap, non-blocking-ish status check for each dependency. Does not
-    raise — always returns 200 so the frontend/judges can see exactly what's
-    configured, even when nothing is."""
-    embedder = get_embedding_service()
-    embeddings_status = "ready" if embedder.is_ready() else f"unavailable: {embedder.load_error()}"
+    """
+    Lightweight health check.
 
-    retrieval = get_retrieval_service()
-    qdrant_ok = retrieval.is_available()
-    qdrant_status = "ready" if qdrant_ok else f"unavailable: {retrieval.connect_error()}"
+    This endpoint intentionally does NOT load the embedding model
+    or make a Qdrant network request. This keeps the health endpoint
+    fast and prevents Render health checks from timing out while
+    SentenceTransformer models are loading on CPU.
+    """
 
-    vector_count = None
-    if qdrant_ok:
-        try:
-            vector_count = retrieval.collection_count()
-        except Exception:  # noqa: BLE001
-            vector_count = None
+    # Check configuration only.
+    # Do NOT call embedding_service.is_ready() here because that
+    # triggers SentenceTransformer model loading.
+    embeddings_status = "configured"
 
+    # Check whether Qdrant URL is configured.
+    # Do NOT call retrieval.is_available() here because that performs
+    # a network request to Qdrant.
+    qdrant_configured = bool(settings.qdrant_url)
+
+    qdrant_status = (
+        "configured"
+        if qdrant_configured
+        else "not configured"
+    )
+
+    # Gemini configuration check is lightweight.
     llm = get_llm_service()
-    gemini_status = "configured" if llm.is_configured() else "not configured (set GEMINI_API_KEY)"
+    gemini_configured = llm.is_configured()
 
-    overall = "ok" if (embedder.is_ready() and qdrant_ok and llm.is_configured()) else "degraded"
+    gemini_status = (
+        "configured"
+        if gemini_configured
+        else "not configured (set GEMINI_API_KEY)"
+    )
+
+    # This endpoint reports application configuration/availability,
+    # not an expensive live dependency check.
+    overall = (
+        "ok"
+        if qdrant_configured and gemini_configured
+        else "degraded"
+    )
 
     return HealthResponse(
         status=overall,
         gemini=gemini_status,
         qdrant=qdrant_status,
         embeddings=embeddings_status,
-        collection=settings.qdrant_collection if qdrant_ok else None,
-        vectorCount=vector_count,
+        collection=settings.qdrant_collection if qdrant_configured else None,
+        vectorCount=None,
     )
 
 
@@ -96,4 +119,8 @@ def config() -> ConfigResponse:
 
 @app.get("/")
 def root() -> dict:
-    return {"name": "IP-SAKTI API", "docs": "/docs", "health": "/api/health"}
+    return {
+        "name": "IP-SAKTI API",
+        "docs": "/docs",
+        "health": "/api/health",
+    }
