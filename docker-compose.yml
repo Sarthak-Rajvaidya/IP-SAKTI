@@ -1,0 +1,41 @@
+version: "3.9"
+
+# IP-SAKTI backend stack: FastAPI + Qdrant only.
+# PostgreSQL is intentionally NOT included yet — see README "Future
+# PostgreSQL integration". Local history/escalations use SQLite by default.
+#
+# The frontend is NOT included here; run it separately with `npm run dev`
+# from the `frontend/` folder (see root README).
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    container_name: ip-sakti-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ip-sakti-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      QDRANT_URL: http://qdrant:6333
+    volumes:
+      - ./backend/data:/app/data
+      - backend_hf_cache:/root/.cache/huggingface
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+
+volumes:
+  qdrant_storage:
+  backend_hf_cache:

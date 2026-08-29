@@ -1,0 +1,15 @@
+NOTE: Product classification in IP-SAKTI is implemented as a deterministic,
+rule-based service (see app/services/classification_service.py), not an LLM
+call. This keeps the classification result explainable and directly usable
+by the retrieval router without depending on LLM availability.
+
+This file is kept as a reference for a future LLM-assisted classification
+mode (e.g. free-text product descriptions instead of the structured
+wizard). If implemented, the prompt should:
+
+- Only choose from the fixed category list already defined in
+  classification_service.CATEGORIES
+- Return confidence and reasons grounded in what the user actually stated
+- Explicitly flag uncertainty rather than guessing when information is
+  missing
+- Never claim a classification is legally binding

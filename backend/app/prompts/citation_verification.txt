@@ -1,0 +1,12 @@
+NOTE: Citation verification in IP-SAKTI is implemented as a deterministic
+code-level validator (see app/services/citation_service.py), not a second
+LLM call. Every [document_id] marker the assistant model produces is
+checked against the actual set of retrieved chunk IDs; anything that
+doesn't match is stripped from the visible text and excluded from the
+returned sources list. This guarantees citations can never be
+hallucinated, regardless of what the LLM outputs.
+
+This file is kept as a reference for teams that later want an LLM-based
+"self-check" pass in addition to the deterministic validator. If added, the
+prompt should ask the model only to confirm or reject citations already
+present against the provided evidence — never to invent new ones.

@@ -1,0 +1,30 @@
+{
+  "nodes": [
+    { "id": "ashwagandha", "label": "Ashwagandha", "category": "concept", "description": "Withania somnifera — a widely used adaptogenic herb in classical and proprietary Ayurvedic formulations." },
+    { "id": "tk", "label": "Traditional Knowledge", "category": "tk", "description": "Knowledge documented in classical Ayurvedic texts, often searchable via the TKDL." },
+    { "id": "bio-resource", "label": "Biological Resource", "category": "concept", "description": "A biological material governed by access and benefit-sharing obligations under the Biological Diversity framework." },
+    { "id": "ayurveda", "label": "Ayurveda", "category": "concept", "description": "The classical system of medicine within which the formulation is situated." },
+    { "id": "patents", "label": "Patents", "category": "patent", "description": "Statutory protection for novel, inventive and industrially applicable formulations or processes." },
+    { "id": "abs", "label": "ABS", "category": "abs", "description": "Access & Benefit Sharing obligations arising from commercial use of biological resources." },
+    { "id": "regulatory", "label": "Regulatory References", "category": "regulatory", "description": "AYUSH, FSSAI and drug-classification guidance applicable to the product." },
+    { "id": "patents-act-3p", "label": "Patents Act 1970, S.3(p)", "category": "law", "description": "Statutory exclusion of traditional knowledge and known-substance aggregation/duplication from patentability." },
+    { "id": "bd-act", "label": "Biological Diversity Act", "category": "law", "description": "Governs access to biological resources and associated traditional knowledge, and benefit-sharing obligations." },
+    { "id": "ayush-ministry", "label": "Ministry of AYUSH", "category": "regulatory", "description": "Central regulatory authority for Ayurveda, Yoga, Unani, Siddha and Homoeopathy systems." },
+    { "id": "trademarks-act", "label": "Trade Marks Act 1999", "category": "law", "description": "Governs registration and protection of brand names, logos and trade dress in India." }
+  ],
+  "edges": [
+    { "from": "ashwagandha", "to": "tk", "relation": "documented in" },
+    { "from": "ashwagandha", "to": "bio-resource", "relation": "is a" },
+    { "from": "ashwagandha", "to": "ayurveda", "relation": "used within" },
+    { "from": "ashwagandha", "to": "patents", "relation": "relevant to" },
+    { "from": "ashwagandha", "to": "abs", "relation": "subject to" },
+    { "from": "ashwagandha", "to": "regulatory", "relation": "classified under" },
+    { "from": "patents", "to": "patents-act-3p", "relation": "GOVERNED_BY" },
+    { "from": "tk", "to": "patents-act-3p", "relation": "EXCLUDES" },
+    { "from": "abs", "to": "bd-act", "relation": "GOVERNED_BY" },
+    { "from": "bio-resource", "to": "bd-act", "relation": "REQUIRES" },
+    { "from": "regulatory", "to": "ayush-ministry", "relation": "GOVERNED_BY" },
+    { "from": "ayurveda", "to": "ayush-ministry", "relation": "HAS_JURISDICTION" },
+    { "from": "patents", "to": "trademarks-act", "relation": "RELATED_TO" }
+  ]
+}
