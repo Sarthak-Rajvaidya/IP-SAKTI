@@ -48,9 +48,13 @@ def knowledge_search(request: KnowledgeSearchRequest) -> dict:
 
     retrieval = get_retrieval_service()
 
+    # Normalize jurisdiction because Qdrant metadata is stored
+    # using lowercase values such as "india" and "international".
+    normalized_jurisdiction = request.jurisdiction.strip().lower()
+
     chunks = retrieval.search(
         query=request.query,
-        jurisdiction=request.jurisdiction,
+        jurisdiction=normalized_jurisdiction,
         domains=request.domains,
         top_k=request.top_k,
     )
